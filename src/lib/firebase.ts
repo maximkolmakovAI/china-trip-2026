@@ -60,7 +60,7 @@ export async function toggleVoteFirebase(
   voterId: string
 ): Promise<number> {
   if (!db) return 0;
-  const ref = doc(db, "votes", itemId);
+  const ref = doc(db!, "votes", itemId);
   try {
     const snap = await getDoc(ref);
     if (snap.exists()) {
@@ -86,7 +86,8 @@ export async function toggleVoteFirebase(
       });
       return 1;
     }
-  } catch {
+  } catch (err) {
+    console.error("[Firebase] toggleVote error:", err);
     return 0;
   }
 }
