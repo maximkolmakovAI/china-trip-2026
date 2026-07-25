@@ -7,6 +7,7 @@ import { DetailModalProvider, useDetailModal } from "@/lib/useDetailModal";
 import DetailModal from "@/components/DetailModal";
 import AuthModal from "@/components/AuthModal";
 import Navbar from "@/components/Navbar";
+import { img } from "@/lib/img";
 import HotelSection from "@/components/HotelSection";
 import ProgramSection from "@/components/ProgramSection";
 import IdeasSection from "@/components/IdeasSection";
@@ -41,7 +42,7 @@ function AppContent({ data, votableIds }: { data: TripData; votableIds: string[]
       <header className="relative bg-accent-black text-bg-base border-b-4 border-accent-pink overflow-hidden">
         <div className="absolute inset-0 opacity-30">
           <img
-            src="/images/cities/shanghai.jpg"
+            src={img("/images/cities/shanghai.jpg")}
             alt="Shanghai"
             className="w-full h-full object-cover"
           />

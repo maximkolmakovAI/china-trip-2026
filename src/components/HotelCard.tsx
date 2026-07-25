@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Hotel, TAG_LABELS, HotelTag } from "@/lib/types";
 import { useDetailModal } from "@/lib/useDetailModal";
+import { img } from "@/lib/img";
 import VoteButton from "./VoteButton";
 
 interface HotelCardProps {
@@ -17,9 +18,9 @@ export default function HotelCard({ hotel, index, city }: HotelCardProps) {
 
   // Gallery: primary photo always. Additional _2/_3 only if they exist in /public.
   const allImages = [
-    `/images/hotels/${city}/${hotel.id}.jpg`,
-    `/images/hotels/${city}/${hotel.id}_2.jpg`,
-    `/images/hotels/${city}/${hotel.id}_3.jpg`,
+    img(`/images/hotels/${city}/${hotel.id}.jpg`),
+    img(`/images/hotels/${city}/${hotel.id}_2.jpg`),
+    img(`/images/hotels/${city}/${hotel.id}_3.jpg`),
   ];
 
   // Track which images failed to load (runtime detection)
@@ -28,16 +29,15 @@ export default function HotelCard({ hotel, index, city }: HotelCardProps) {
   const effectiveIndex = Math.min(imgIndex, images.length - 1);
 
   const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    const failedIdx = allImages.indexOf(img.src.replace(window.location.origin, ""));
-    if (!img.dataset.fallback) {
+    const el = e.currentTarget;
+    const failedIdx = allImages.indexOf(el.src.replace(window.location.origin, ""));
+    if (!el.dataset.fallback) {
       // First failure: try SVG fallback
-      img.dataset.fallback = "1";
-      const svgUrl = `/images/hotels/${city}/${hotel.id}.svg`;
+      el.dataset.fallback = "1";
       if (failedIdx >= 0) {
         setFailedImgs((prev) => new Set(prev).add(failedIdx));
       }
-      img.src = svgUrl;
+      el.src = img(`/images/hotels/${city}/${hotel.id}.svg`);
     } else {
       // SVG also failed: hide dots for this index
       if (failedIdx >= 0) {

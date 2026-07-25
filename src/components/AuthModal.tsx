@@ -45,10 +45,16 @@ export default function AuthModal() {
   };
 
   if (isLoggedIn) {
+    const char = characters[user!.characterIndex];
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        <img
+          src={char.portrait}
+          alt={char.name}
+          className="w-8 h-8 rounded-full object-cover border border-bg-base/30"
+        />
         <span className="font-mono text-xs text-bg-base/70">
-          {characters[user!.characterIndex].img} {user!.name}
+          {user!.name}
         </span>
         <button onClick={logout}
           className="font-mono text-[10px] font-bold border border-bg-base/30 px-2 py-1 text-bg-base/50 hover:text-bg-base hover:border-bg-base/70 transition-colors">
@@ -89,13 +95,18 @@ export default function AuthModal() {
                 <button
                   key={u.name}
                   onClick={() => setName(u.name)}
-                  className={`font-mono text-xs border-2 px-2 py-1 transition-colors ${
+                  className={`flex items-center gap-1.5 font-mono text-xs border-2 px-2 py-1 transition-colors ${
                     name === u.name
                       ? "bg-accent-black text-bg-base border-accent-black"
                       : "border-accent-black hover:bg-accent-black hover:text-bg-base"
                   }`}
                 >
-                  {characters[u.characterIndex].img} {u.name}
+                  <img
+                    src={characters[u.characterIndex].portrait}
+                    alt={characters[u.characterIndex].name}
+                    className="w-5 h-5 rounded-full object-cover"
+                  />
+                  {u.name}
                 </button>
               ))}
             </div>
@@ -108,19 +119,24 @@ export default function AuthModal() {
 
         <div className="mb-5">
           <p className="font-mono text-[10px] text-text-muted tracking-wider mb-2">ВАШ ПЕРСОНАЖ (ПАРОЛЬ):</p>
-          <div className="grid grid-cols-4 gap-1.5 max-h-48 overflow-y-auto">
+          <div className="grid grid-cols-4 gap-1.5 max-h-64 overflow-y-auto">
             {characters.map((ch, i) => (
               <button
                 key={i}
                 onClick={() => setSelectedChar(i)}
-                className={`text-center p-2 border-2 text-xs transition-all ${
+                className={`text-center p-1 border-2 text-xs transition-all overflow-hidden ${
                   selectedChar === i
                     ? "bg-accent-pink text-white border-accent-black scale-105"
                     : "border-accent-black hover:bg-accent-black hover:text-bg-base"
                 }`}
                 title={ch.name}
               >
-                <div className="text-lg">{ch.img}</div>
+                <img
+                  src={ch.portrait}
+                  alt={ch.name}
+                  className="w-full aspect-square object-cover mb-1"
+                  loading="lazy"
+                />
                 <div className="font-mono text-[9px] truncate">{ch.name.split(" ")[0]}</div>
               </button>
             ))}
