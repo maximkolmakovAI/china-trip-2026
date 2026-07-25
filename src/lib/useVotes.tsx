@@ -72,6 +72,7 @@ export function VoteProvider({
 
   const toggleVote = useCallback(
     async (itemId: string) => {
+      console.log("[Votes] toggleVote:", itemId, "userId:", userId, "firebase:", firebaseAvailable);
       const newUserVotes = { ...userVotes };
       const hasVoted = !!newUserVotes[itemId];
       newUserVotes[itemId] = !hasVoted;
@@ -85,10 +86,13 @@ export function VoteProvider({
 
       if (firebaseAvailable) {
         try {
-          await toggleVoteFirebase(itemId, userId);
-        } catch {
-          // Firebase failed, keeping local state
+          const result = await toggleVoteFirebase(itemId, userId);
+          console.log("[Votes] Firebase result:", result);
+        } catch (err) {
+          console.error("[Votes] Firebase failed:", err);
         }
+      } else {
+        console.warn("[Votes] Firebase not available, local only");
       }
     },
     [userVotes, userId]
