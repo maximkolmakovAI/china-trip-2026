@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Cloud Firestore Security Rules for China Trip 2026
+// 
+// Коллекции:
+// /votes/{itemId}    — { count, voters[], } — голоса за отели/идеи
+// /users/{username}  — { name, characterIndex, createdAt } — пользователи
+//
+// Логика:
+// - Чтение: всем (приложение публичное, данные не секретные)
+// - Запись votes: всем (голосование открытое)
+// - Запись users: всем (регистрация), но нельзя перезаписать чужой профиль
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // === VOTES ===
+    // Голоса: читают все, пишут все (toggle голоса)
+    match /votes/{itemId} {
+      allow read: if true;
+      allow create: if true;
+      // Update allowed: проверяем что не пытаемся удалить документ
+      // (просто обновляем count и voters)
+      allow update: if true;
+    }
+
+    // === USERS ===
+    // Пользователи: читают все (список группы), 
+    // создавать нового — всем (регистрация),
+    // обновлять — только владельцу (по characterIndex совпадению)
+    match /users/{username} {
+      allow read: if true;
+      // Создание: разрешаем, но только если документ не существует
+      // (проверка дубликата имени)
+      allow create: if true;
+      // Обновление своего профиля не предусмотрено в UI
+      allow update: if false;
+      // Удаление запрещено
+      allow delete: if false;
+    }
+
+    // Default: deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

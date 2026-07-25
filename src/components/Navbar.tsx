@@ -1,0 +1,87 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useUser } from "@/lib/useUser";
+
+const sections = [
+  { id: "hotels", label: "Отели" },
+  { id: "program", label: "Программа" },
+  { id: "ideas", label: "Идеи" },
+  { id: "checklist", label: "Чеклист" },
+  { id: "budget", label: "Бюджет" },
+  { id: "splitwise", label: "Долги" },
+  { id: "timeline", label: "Таймлайн" },
+  { id: "map", label: "Карта" },
+  { id: "gallery", label: "Фото" },
+  { id: "voicenotes", label: "Голос" },
+  { id: "documents", label: "Сейф" },
+  { id: "export", label: "PDF" },
+  { id: "assistant", label: "Помощник" },
+];
+
+export default function Navbar() {
+  const { user, characters } = useUser();
+  const [active, setActive] = useState("hotels");
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+      for (const section of [...sections].reverse()) {
+        const el = document.getElementById(section.id);
+        if (el && el.getBoundingClientRect().top <= 120) {
+          setActive(section.id);
+          break;
+        }
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleClick = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  return (
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 border-b-3 ${
+        scrolled ? "bg-bg-base" : "bg-bg-base/90"
+      } border-accent-black`}
+    >
+      <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="flex items-center gap-2"
+        >
+          <span className="font-display text-lg tracking-wider text-accent-black">
+            CHINA TRIP
+          </span>
+          <span className="w-2 h-2 bg-accent-pink" />
+        </button>
+
+        <div className="flex items-center gap-1">
+          {user && (
+            <span className="font-mono text-[10px] text-text-muted mr-2 border-r-2 border-accent-black/20 pr-2">
+              {characters[user.characterIndex].img} {user.name}
+            </span>
+          )}
+          {sections.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => handleClick(s.id)}
+              className={`px-3 py-1.5 font-mono text-xs font-bold tracking-wider transition-all duration-150 ${
+                active === s.id
+                  ? "bg-accent-pink text-white"
+                  : "text-accent-black hover:bg-accent-black hover:text-bg-base"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+}
