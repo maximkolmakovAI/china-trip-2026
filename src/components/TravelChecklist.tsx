@@ -74,7 +74,9 @@ const DEFAULT: Category[] = [
 export default function TravelChecklist() {
   const { user } = useUser();
   const userId = user?.name || "anonymous";
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(() =>
+    DEFAULT.map((cat) => ({ ...cat, items: cat.items.map((it) => ({ ...it })) }))
+  );
   const [loaded, setLoaded] = useState(false);
 
   const storageKey = `china_trip_checklist_${userId}`;
@@ -83,7 +85,9 @@ export default function TravelChecklist() {
     if (typeof window === "undefined") return;
     try {
       const raw = localStorage.getItem(storageKey);
-      if (raw) setCategories(JSON.parse(raw));
+      if (raw) {
+        setCategories(JSON.parse(raw));
+      }
     } catch {}
     setLoaded(true);
   }, [storageKey]);

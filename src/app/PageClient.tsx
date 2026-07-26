@@ -24,6 +24,7 @@ import AddItemPanel from "@/components/AddItemPanel";
 import DocumentVault from "@/components/DocumentVault";
 import VoiceNotes from "@/components/VoiceNotes";
 import ExportPdf from "@/components/ExportPdf";
+import FeedbackButton from "@/components/FeedbackButton";
 
 function AppContent({ data, votableIds }: { data: TripData; votableIds: string[] }) {
   const { isLoggedIn, user, characters } = useUser();
@@ -69,21 +70,23 @@ function AppContent({ data, votableIds }: { data: TripData; votableIds: string[]
 
       <main className="max-w-6xl mx-auto px-6">
         <HotelSection shanghai={data.hotels.shanghai} beijing={data.hotels.beijing} />
+        <IdeasSection ideas={data.ideas} visited={data.visited} />
+        <AddItemPanel />
         <ProgramSection program={data.program} />
-          <IdeasSection ideas={data.ideas} visited={data.visited} />
-          <AddItemPanel />
-          <WeatherWidget />
-          <TravelChecklist />
-          <BudgetCalculator />
-          <HotelComparison />
-          <DocumentVault />
-          <VoiceNotes />
-          <ExportPdf program={data.program} />
-          <DragDropTimeline program={data.program} />
-          <PinMap program={data.program} />
-          <RouteMap program={data.program} />
-          <AssistantSection />
+        <WeatherWidget />
+        <TravelChecklist />
+        <BudgetCalculator />
+        <HotelComparison />
+        <DocumentVault />
+        <VoiceNotes />
+        <ExportPdf program={data.program} />
+        <DragDropTimeline program={data.program} />
+        <PinMap program={data.program} />
+        <RouteMap program={data.program} />
+        <AssistantSection />
       </main>
+
+      <FeedbackButton />
 
       <footer className="bg-accent-black text-bg-base mt-20 border-t-4 border-accent-pink">
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">

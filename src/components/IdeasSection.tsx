@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { IdeaCategories, IdeaItem } from "@/lib/types";
 import { useUser } from "@/lib/useUser";
+import { useDetailModal } from "@/lib/useDetailModal";
+import { useVotes } from "@/lib/useVotes";
 import IdeaCard from "./IdeaCard";
 import { loadCustomIdeas } from "./AddItemPanel";
+import aiData from "@/data/aiSuggestions.json";
 
 interface IdeasSectionProps {
   ideas: IdeaCategories;
@@ -35,15 +38,27 @@ function getCategoryIdeas(ideas: IdeaCategories, key: string): IdeaItem[] {
   return ideas.other;
 }
 
+const AI_CATEGORIES = new Set(["shanghai", "beijing", "ningbo", "hangzhou", "huangshan"]);
+
 export default function IdeasSection({ ideas, visited }: IdeasSectionProps) {
   const { user } = useUser();
   const userId = user?.name || "anonymous";
   const [active, setActive] = useState<string>("shanghai");
   const [customIdeas, setCustomIdeas] = useState<{ text: string; note: string; category: string }[]>([]);
+  const { open } = useDetailModal();
+  const { toggleVote } = useVotes();
 
   useEffect(() => {
     setCustomIdeas(loadCustomIdeas(userId));
   }, [userId]);
+
+  const mainIdeas = getCategoryIdeas(ideas, active);
+
+  const aiSuggestions = useMemo(() => {
+    if (!AI_CATEGORIES.has(active)) return [];
+    const data = aiData as Record<string, { id: string; text: string; note: string; tags?: string[] }[]>;
+    return data[active] || [];
+  }, [active]);
 
   return (
     <section id="ideas" className="pt-28 -mt-16">
@@ -56,7 +71,7 @@ export default function IdeasSection({ ideas, visited }: IdeasSectionProps) {
         </span>
       </div>
       <p className="font-mono text-sm text-text-secondary mb-6">
-        Новые места, которые хотим посетить. Голосуйте за самые интересные варианты.
+        Накидываем все идеи → потом компонуем программу. Голосуйте за лучшие.
       </p>
 
       {visited.length > 0 && (
@@ -74,9 +89,8 @@ export default function IdeasSection({ ideas, visited }: IdeasSectionProps) {
 
       <div className="flex flex-wrap gap-2 mb-6">
         {categories.map((cat) => {
-          const mainItems = getCategoryIdeas(ideas, cat.key);
-          const customItems = customIdeas.filter(c => c.category === cat.key || (cat.key === "ningbo" && c.category === "ningbo") || (cat.key === "hangzhou" && c.category === "hangzhou") || (cat.key === "huangshan" && c.category === "huangshan"));
-          const count = mainItems.length + customItems.length;
+          const count = getCategoryIdeas(ideas, cat.key).length + customIdeas.filter(c => c.category === cat.key).length;
+          const aiCount = AI_CATEGORIES.has(cat.key) ? (aiData as Record<string, unknown[]>)[cat.key]?.length || 0 : 0;
           return (
             <button key={cat.key} onClick={() => setActive(cat.key)}
               className={`font-mono text-xs font-bold tracking-wider px-4 py-2 border-2 transition-all duration-150 ${
@@ -84,19 +98,16 @@ export default function IdeasSection({ ideas, visited }: IdeasSectionProps) {
                   ? "bg-accent-pink text-white border-accent-black"
                   : "bg-transparent text-accent-black border-accent-black hover:bg-accent-black hover:text-bg-base"
               }`}>
-              {cat.label} ({count})
+              {cat.label} ({count + aiCount})
             </button>
           );
         })}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* Custom ideas (added by users) */}
-        {customIdeas.filter(c => {
-          const activeKey = active as string;
-          if (activeKey === "other") return ["other", "ningbo", "hangzhou", "huangshan"].includes(c.category);
-          return c.category === activeKey;
-        }).map((idea, i) => (
+        {/* Custom ideas */}
+        {customIdeas.filter(c => c.category === active || (active === "other" && !["shanghai","beijing","food","shopping"].includes(c.category)))
+          .map((idea, i) => (
           <div key={`custom-${i}`} className="brutal-border-thin bg-accent-pink/5 p-4 animate-slide-up">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
@@ -107,17 +118,36 @@ export default function IdeasSection({ ideas, visited }: IdeasSectionProps) {
             </div>
           </div>
         ))}
+
         {/* Main ideas */}
-        {getCategoryIdeas(ideas, active).map((idea) => (
+        {mainIdeas.map((idea) => (
           <IdeaCard key={idea.id} idea={idea} city={active} />
+        ))}
+
+        {/* AI suggestions */}
+        {aiSuggestions.map((s) => (
+          <div key={s.id}
+            className="brutal-border-thin bg-bg-secondary/50 p-4 animate-slide-up cursor-pointer hover:bg-bg-secondary transition-colors"
+            onClick={() => open({ type: "ai", title: s.text, description: s.note, tags: s.tags })}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-mono text-[10px] font-bold text-accent-pink border-2 border-accent-pink px-1.5 py-0.5">🤖 ИИ</span>
+                </div>
+                <p className="text-sm font-bold text-accent-black">{s.text}</p>
+                {s.note && <p className="font-mono text-xs text-text-muted mt-1">{s.note}</p>}
+              </div>
+              <button onClick={(e) => { e.stopPropagation(); toggleVote(s.id); }}
+                className="font-mono text-xs font-bold border-2 border-accent-black px-2 py-1 hover:bg-accent-black hover:text-bg-base transition-colors shrink-0">
+                +
+              </button>
+            </div>
+          </div>
         ))}
       </div>
 
-      {!customIdeas.some(c => {
-        const activeKey = active as string;
-        if (activeKey === "other") return ["other", "ningbo", "hangzhou", "huangshan"].includes(c.category);
-        return c.category === activeKey;
-      }) && getCategoryIdeas(ideas, active).length === 0 && (
+      {mainIdeas.length === 0 && aiSuggestions.length === 0 && (
         <div className="text-center py-12 border-3 border-accent-black">
           <p className="font-mono text-sm text-text-muted">В этой категории пока нет идей</p>
         </div>
