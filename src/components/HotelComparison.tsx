@@ -27,7 +27,7 @@ export default function HotelComparison() {
   const compareHotels = selected.map((id) => allHotels.find((h) => h.id === id)).filter(Boolean) as Hotel[];
 
   return (
-    <section className="pt-16 -mt-4">
+    <section id="comparison" className="pt-28 -mt-16">
       <div className="flex items-center gap-4 mb-2">
         <h2 className="font-display text-4xl md:text-5xl text-accent-black tracking-tight">
           СРАВНЕНИЕ

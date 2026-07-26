@@ -6,17 +6,17 @@ import AuthModal from "./AuthModal";
 
 const sections = [
   { id: "hotels", label: "Отели" },
-  { id: "program", label: "Программа" },
   { id: "ideas", label: "Идеи" },
+  { id: "program", label: "Программа" },
+  { id: "weather", label: "Погода" },
   { id: "checklist", label: "Чеклист" },
   { id: "budget", label: "Бюджет" },
-  { id: "splitwise", label: "Долги" },
+  { id: "comparison", label: "Сравнение" },
+  { id: "documents", label: "Сейф" },
+  { id: "voicenotes", label: "Голос" },
+  { id: "export", label: "PDF" },
   { id: "timeline", label: "Таймлайн" },
   { id: "map", label: "Карта" },
-  { id: "gallery", label: "Фото" },
-  { id: "voicenotes", label: "Голос" },
-  { id: "documents", label: "Сейф" },
-  { id: "export", label: "PDF" },
   { id: "assistant", label: "Помощник" },
 ];
 
