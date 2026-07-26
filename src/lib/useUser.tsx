@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import {
-  firebaseAvailable,
   registerUserFirebase,
   loginUserFirebase,
   subscribeUsers,
@@ -97,24 +96,38 @@ export function UserProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem(STORAGE_SESSION);
     }
 
-    // Subscribe to Firestore users for real-time sync
-    if (firebaseAvailable) {
-      const unsub = subscribeUsers((fbUsers: UserRecord[]) => {
-        const mapped: UserData[] = fbUsers.map((u) => ({
-          name: u.name,
-          characterIndex: u.characterIndex,
-        }));
-        setAllUsers(mapped);
-        saveLocalUsers(mapped);
-      });
-      return () => unsub();
-    }
+    // Subscribe to Firestore users for real-time sync (REST-based)
+    const unsub = subscribeUsers((fbUsers: UserRecord[]) => {
+      const mapped: UserData[] = fbUsers.map((u) => ({
+        name: u.name,
+        characterIndex: u.characterIndex,
+      }));
+      // Merge: keep local users that aren't in Firestore yet
+      const local = loadLocalUsers();
+      const merged = [...mapped];
+      for (const lu of local) {
+        if (!merged.some((mu) => mu.name === lu.name)) {
+          merged.push(lu);
+        }
+      }
+      setAllUsers(merged);
+      saveLocalUsers(merged);
+    });
+    return () => unsub();
   }, []);
 
   const register = useCallback(async (name: string, charIndex: number): Promise<boolean> => {
     const newUser = { name, characterIndex: charIndex };
 
-    // Always save locally
+    // Try Firestore FIRST (before setting local state)
+    // This way we know if the name is taken before showing login
+    const ok = await registerUserFirebase(name, charIndex);
+    if (!ok) {
+      // Name taken in Firestore or write failed
+      return false;
+    }
+
+    // Firestore succeeded (or not available) → save locally and log in
     const local = loadLocalUsers();
     if (!local.some((u) => u.name === name)) {
       local.push(newUser);
@@ -123,40 +136,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setAllUsers(local);
     setUser(newUser);
     localStorage.setItem(STORAGE_SESSION, JSON.stringify(newUser));
-
-    // Sync to Firestore if available
-    if (firebaseAvailable) {
-      const ok = await registerUserFirebase(name, charIndex);
-      if (!ok) {
-        // Name taken in Firestore but not locally — force logout
-        setUser(null);
-        localStorage.removeItem(STORAGE_SESSION);
-        return false;
-      }
-    }
     return true;
   }, []);
 
   const login = useCallback(async (name: string, charIndex: number): Promise<boolean> => {
-    // Try Firestore first if available
-    if (firebaseAvailable) {
-      const fbUser = await loginUserFirebase(name, charIndex);
-      if (fbUser) {
-        const userData = { name: fbUser.name, characterIndex: fbUser.characterIndex };
-        setUser(userData);
-        localStorage.setItem(STORAGE_SESSION, JSON.stringify(userData));
-        return true;
-      }
-      return false;
+    // Try Firestore REST first
+    const fbUser = await loginUserFirebase(name, charIndex);
+    if (fbUser) {
+      const userData = { name: fbUser.name, characterIndex: fbUser.characterIndex };
+      setUser(userData);
+      localStorage.setItem(STORAGE_SESSION, JSON.stringify(userData));
+      return true;
     }
-
-    // Fallback: local only
-    const local = loadLocalUsers();
-    const found = local.find((u) => u.name === name);
-    if (!found || found.characterIndex !== charIndex) return false;
-    setUser(found);
-    localStorage.setItem(STORAGE_SESSION, JSON.stringify(found));
-    return true;
+    return false;
   }, []);
 
   const logout = useCallback(() => {

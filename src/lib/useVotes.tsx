@@ -10,7 +10,6 @@ import {
 } from "react";
 import { useUser } from "@/lib/useUser";
 import {
-  firebaseAvailable,
   toggleVoteFirebase,
   subscribeVotes,
 } from "./firebase";
@@ -61,7 +60,7 @@ export function VoteProvider({
   }, [userId]);
 
   useEffect(() => {
-    if (!firebaseAvailable || votableIds.length === 0) return;
+    if (votableIds.length === 0) return;
     const unsubs = votableIds.map((id) =>
       subscribeVotes(id, (count) => {
         setVotes((prev) => ({ ...prev, [id]: count }));
@@ -72,7 +71,7 @@ export function VoteProvider({
 
   const toggleVote = useCallback(
     async (itemId: string) => {
-      console.log("[Votes] toggleVote:", itemId, "userId:", userId, "firebase:", firebaseAvailable);
+      console.log("[Votes] toggleVote:", itemId, "userId:", userId);
       const newUserVotes = { ...userVotes };
       const hasVoted = !!newUserVotes[itemId];
       newUserVotes[itemId] = !hasVoted;
@@ -84,15 +83,11 @@ export function VoteProvider({
         [itemId]: Math.max(0, (prev[itemId] || 0) + (hasVoted ? -1 : 1)),
       }));
 
-      if (firebaseAvailable) {
-        try {
-          const result = await toggleVoteFirebase(itemId, userId);
-          console.log("[Votes] Firebase result:", result);
-        } catch (err) {
-          console.error("[Votes] Firebase failed:", err);
-        }
-      } else {
-        console.warn("[Votes] Firebase not available, local only");
+      try {
+        const result = await toggleVoteFirebase(itemId, userId);
+        console.log("[Votes] Firebase result:", result);
+      } catch (err) {
+        console.error("[Votes] Firebase failed:", err);
       }
     },
     [userVotes, userId]
