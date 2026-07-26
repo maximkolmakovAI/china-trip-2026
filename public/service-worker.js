@@ -1,4 +1,4 @@
-const CACHE_NAME = "china-trip-v2";
+const CACHE_NAME = "china-trip-v3";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
@@ -21,6 +21,22 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
   if (url.protocol === "chrome-extension:") return;
 
+  // Network-first for navigation (HTML) — ensures users always get latest UI
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/")))
+    );
+    return;
+  }
+
   // Network-first with cache fallback for JS/CSS
   if (url.pathname.includes("/_next/static/")) {
     event.respondWith(
@@ -38,7 +54,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Cache-first for everything else (images, pages)
+  // Cache-first for everything else (images)
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) {
@@ -51,11 +67,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
         return response;
-      }).catch(() => {
-        if (event.request.mode === "navigate") {
-          return caches.match("/");
-        }
-      });
+      }).catch(() => {});
     })
   );
 });
