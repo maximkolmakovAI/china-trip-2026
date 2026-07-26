@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@/lib/useUser";
+import AuthModal from "./AuthModal";
 
 const sections = [
   { id: "hotels", label: "Отели" },
@@ -20,7 +21,7 @@ const sections = [
 ];
 
 export default function Navbar() {
-  const { user, characters } = useUser();
+  const { user, characters, logout } = useUser();
   const [active, setActive] = useState("hotels");
   const [scrolled, setScrolled] = useState(false);
 
@@ -63,8 +64,14 @@ export default function Navbar() {
 
         <div className="flex items-center gap-1">
           {user && (
-            <span className="font-mono text-[10px] text-text-muted mr-2 border-r-2 border-accent-black/20 pr-2">
+            <span className="font-mono text-[10px] text-text-muted mr-2 border-r-2 border-accent-black/20 pr-2 flex items-center gap-1.5">
               {characters[user.characterIndex].img} {user.name}
+              <button
+                onClick={logout}
+                className="font-mono text-[9px] font-bold border border-accent-black/30 px-1.5 py-0.5 text-bg-base/50 hover:text-accent-pink hover:border-accent-pink transition-colors"
+              >
+                ВЫЙТИ
+              </button>
             </span>
           )}
           {sections.map((s) => (
