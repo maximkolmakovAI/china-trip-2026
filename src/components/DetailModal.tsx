@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { Hotel } from "@/lib/types";
+import { img } from "@/lib/img";
 
 export type DetailItemType = "hotel" | "program" | "idea" | "ai";
 
@@ -29,12 +30,17 @@ interface DetailModalProps {
 }
 
 export default function DetailModal({ data, onClose }: DetailModalProps) {
+  const [galleryIdx, setGalleryIdx] = useState(0);
+
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === "Escape") onClose();
-  }, [onClose]);
+    if (e.key === "ArrowLeft") setGalleryIdx((i) => Math.max(0, i - 1));
+    if (e.key === "ArrowRight") setGalleryIdx((i) => Math.min((data?.images?.length || 1) - 1, i + 1));
+  }, [onClose, data]);
 
   useEffect(() => {
     if (data) {
+      setGalleryIdx(0);
       document.addEventListener("keydown", handleKey);
       document.body.style.overflow = "hidden";
     }
@@ -52,6 +58,13 @@ export default function DetailModal({ data, onClose }: DetailModalProps) {
     idea: "ИДЕЯ",
     ai: "ИДЕЯ ОТ ИИ",
   };
+
+  // Collect all images: explicit images array, or single image
+  const allImages = data.images && data.images.length > 0
+    ? data.images.map(im => img(im))
+    : data.image
+      ? [img(data.image)]
+      : [];
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-accent-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -82,14 +95,60 @@ export default function DetailModal({ data, onClose }: DetailModalProps) {
         </div>
 
         <div className="p-4 space-y-5">
-          {/* Gallery */}
-          {data.images && data.images.length > 0 && (
-            <div className="grid grid-cols-2 gap-2">
-              {data.images.map((img, i) => (
-                <div key={i} className="border-2 border-accent-black bg-bg-secondary aspect-video flex items-center justify-center">
-                  <img src={img} alt={`${data.title} ${i + 1}`} className="w-full h-full object-cover" />
+          {/* Gallery — main image + thumbnails */}
+          {allImages.length > 0 && (
+            <div className="space-y-2">
+              {/* Main image */}
+              <div className="relative border-2 border-accent-black bg-bg-secondary aspect-video overflow-hidden group">
+                <img
+                  src={allImages[galleryIdx]}
+                  alt={`${data.title} ${galleryIdx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                {/* Navigation arrows */}
+                {allImages.length > 1 && (
+                  <>
+                    {galleryIdx > 0 && (
+                      <button
+                        onClick={() => setGalleryIdx((i) => Math.max(0, i - 1))}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-accent-black/70 text-bg-base w-8 h-8 flex items-center justify-center font-mono font-bold hover:bg-accent-pink transition-colors"
+                      >
+                        ‹
+                      </button>
+                    )}
+                    {galleryIdx < allImages.length - 1 && (
+                      <button
+                        onClick={() => setGalleryIdx((i) => Math.min(allImages.length - 1, i + 1))}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent-black/70 text-bg-base w-8 h-8 flex items-center justify-center font-mono font-bold hover:bg-accent-pink transition-colors"
+                      >
+                        ›
+                      </button>
+                    )}
+                    {/* Counter */}
+                    <div className="absolute bottom-2 right-2 bg-accent-black/70 text-bg-base font-mono text-[10px] px-2 py-0.5">
+                      {galleryIdx + 1} / {allImages.length}
+                    </div>
+                  </>
+                )}
+              </div>
+              {/* Thumbnails */}
+              {allImages.length > 1 && (
+                <div className="flex gap-1.5 overflow-x-auto">
+                  {allImages.map((im, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setGalleryIdx(i)}
+                      className={`shrink-0 w-16 h-12 border-2 overflow-hidden transition-all ${
+                        i === galleryIdx
+                          ? "border-accent-pink scale-105"
+                          : "border-accent-black opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      <img src={im} alt={`thumb ${i + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           )}
 

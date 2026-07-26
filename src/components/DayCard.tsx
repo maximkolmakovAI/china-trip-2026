@@ -8,6 +8,7 @@ import { useVotes } from "@/lib/useVotes";
 import { useDetailModal } from "@/lib/useDetailModal";
 import RouteOptimizer from "./RouteOptimizer";
 import HighlightLocations from "./HighlightLocations";
+import { findPlaceImages } from "@/lib/placeImages";
 
 interface DayCardProps {
   day: ProgramDay;
@@ -79,7 +80,16 @@ export default function DayCard({ day, index }: DayCardProps) {
 
   const openItemModal = (text: string, done: boolean) => {
     const sug = findSuggestion(text);
-    open({ type: "program", title: text, subtitle: `День ${day.day} · ${day.city}`, description: sug?.note || day.notes || undefined, tags: sug?.tags, city: day.city, day: day.day });
+    open({
+      type: "program",
+      title: text,
+      subtitle: `День ${day.day} · ${day.city}`,
+      description: sug?.note || day.notes || undefined,
+      tags: sug?.tags,
+      city: day.city,
+      day: day.day,
+      images: findPlaceImages(text),
+    });
   };
 
   const handleDragStart = (idx: number) => { dragItem.current = idx; };
@@ -177,7 +187,7 @@ function AiSuggestionRow({ suggestion, voteCount, isAdded }: {
         }`}>
         {isAdded ? "✓" : "+"} {voteCount}
       </button>
-      <button onClick={() => open({ type: "ai", title: suggestion.text, description: suggestion.note, tags: suggestion.tags })}
+      <button onClick={() => open({ type: "ai", title: suggestion.text, description: suggestion.note, tags: suggestion.tags, images: findPlaceImages(suggestion.text) })}
         className="flex-1 min-w-0 text-left cursor-pointer hover:text-accent-pink transition-colors">
         <p className={`text-xs ${isAdded ? "font-bold text-accent-black" : "text-text-secondary"}`}>{suggestion.text}</p>
         {suggestion.note && <p className="font-mono text-[10px] text-text-muted mt-0.5">{suggestion.note}</p>}

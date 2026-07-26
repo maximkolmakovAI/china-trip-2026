@@ -60,7 +60,7 @@ export default function HotelCard({ hotel, index, city }: HotelCardProps) {
       price: hotel.price ? `${hotel.price.toLocaleString()} ₽` : undefined,
       tags: hotel.tags,
       city: city === "shanghai" ? "Шанхай" : "Пекин",
-      images: [],
+      images: images.length > 0 ? images.map(im => im) : [],
     });
   };
 

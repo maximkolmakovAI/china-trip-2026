@@ -4,6 +4,7 @@ import { IdeaItem } from "@/lib/types";
 import { useDetailModal } from "@/lib/useDetailModal";
 import VoteButton from "./VoteButton";
 import HighlightLocations from "./HighlightLocations";
+import { findPlaceImages } from "@/lib/placeImages";
 
 interface IdeaCardProps {
   idea: IdeaItem;
@@ -26,6 +27,7 @@ export default function IdeaCard({ idea, city }: IdeaCardProps) {
         pros: idea.pros,
         cons: idea.cons,
         insight: idea.insight,
+        images: findPlaceImages(idea.text),
       })}
     >
       <div className="flex items-start justify-between gap-3">
