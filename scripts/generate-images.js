@@ -18,15 +18,20 @@ const cities = [
   { key: 'huangshan', name: 'HUANGSHAN', subtitle: '黄山 · Yellow Mountains · UNESCO' },
 ];
 
-// Hotel data
+// Hotel data (updated 27.07.2026 — new budget Shanghai hotels)
 const hotels = {
   shanghai: [
-    { id: 'sh1', name: 'Shangri-La Qiantan', district: 'Цяньтань', price: '25 000₽' },
-    { id: 'sh2', name: 'Amanyangyun', district: 'Пригород', price: '127 000₽' },
-    { id: 'sh3', name: 'The Sukhothai Shanghai', district: 'Центр', price: '18 600₽' },
-    { id: 'sh4', name: 'Banyan Tree on the Bund', district: 'Бунд', price: '29 600₽' },
-    { id: 'sh5', name: 'InterContinental Wonderland', district: 'Шэшань', price: '34 000₽' },
-    { id: 'sh6', name: 'Radisson Blu New World', district: 'Народная пл.', price: '12 700₽' },
+    { id: 'sh1', name: 'Fishion Home', district: 'Чаншу Лу', price: '5 367 ₽' },
+    { id: 'sh2', name: 'Hebei Hotel', district: 'Чжабэй', price: '1 471 ₽' },
+    { id: 'sh3', name: 'Kuke Zhishang', district: 'Цзинъань', price: '3 206 ₽' },
+    { id: 'sh4', name: 'Zsmart Hotel', district: 'Цзинъань', price: '1 034 ₽' },
+    { id: 'sh5', name: 'Jinglai Hotel', district: 'Пудун', price: '3 500 ₽' },
+    { id: 'sh6', name: 'Green Valley Home', district: 'Чаннин', price: '3 000 ₽' },
+    { id: 'sh7', name: 'Xiaozhu Homestay', district: 'Цзинъань', price: '2 500 ₽' },
+    { id: 'sh8', name: 'Nana Homestay', district: 'Пудун', price: '4 000 ₽' },
+    { id: 'sh9', name: 'Puyi Hotel', district: 'Хуанпу', price: '4 500 ₽' },
+    { id: 'sh10', name: 'Xiaozhu Homestay', district: 'Сюйхуэй', price: '2 200 ₽' },
+    { id: 'sh11', name: 'LifeIN Apartment', district: 'Фр. концессия', price: '5 500 ₽' },
   ],
   beijing: [
     { id: 'bj1', name: 'Commune by the Great Wall', district: 'Бадалин', price: '17 000₽' },
